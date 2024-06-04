@@ -1,7 +1,7 @@
-import { auth } from "@/services/auth";
+import { auth } from '@/services/auth'
 
 export default async function Home() {
-  const session = await auth();
+  const session = await auth()
 
-  return <pre>{JSON.stringify(session?.user, null, 1)}</pre>;
+  return <pre>{JSON.stringify(session?.user, null, 1)}</pre>
 }
