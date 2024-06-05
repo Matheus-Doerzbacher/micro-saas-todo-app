@@ -1,5 +1,5 @@
 'use server'
-import { upsertTodoSchema } from './schema'
+import { deleteTodoSchema, upsertTodoSchema } from './schema'
 import { auth } from '@/services/auth'
 import { prisma } from '@/services/database'
 import { z } from 'zod'
@@ -65,4 +65,16 @@ export async function upsertTodo(input: z.infer<typeof upsertTodoSchema>) {
   })
 
   return todo
+}
+
+export async function deleteTodo(input: z.infer<typeof deleteTodoSchema>) {
+  const session = await auth()
+
+  await prisma.todo.delete({
+    where: { id: input.id, userId: session?.user?.id },
+  })
+  return {
+    error: null,
+    data: 'Tarefa deletada com sucesso',
+  }
 }

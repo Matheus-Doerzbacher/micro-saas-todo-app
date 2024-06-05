@@ -5,3 +5,7 @@ export const upsertTodoSchema = z.object({
   title: z.string().optional(),
   doneAt: z.date().optional(),
 })
+
+export const deleteTodoSchema = z.object({
+  id: z.string(),
+})
