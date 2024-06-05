@@ -35,98 +35,26 @@ import {
 } from '@/components/ui/table'
 // import { finished } from 'stream'
 import { Badge } from '@/components/ui/badge'
-
-export type Todo = {
-  id: string
-  titulo: string
-  createdAt: Date
-  updateAt: Date
-  finishedAt?: Date
-}
-
-const data: Todo[] = [
-  {
-    id: '1',
-    titulo: 'Estudar TypeScript',
-    createdAt: new Date('2023-06-01T10:00:00Z'),
-    updateAt: new Date('2023-06-01T10:00:00Z'),
-    finishedAt: new Date('2023-06-01T12:00:00Z'),
-  },
-  {
-    id: '2',
-    titulo: 'Ler livro sobre JavaScript',
-    createdAt: new Date('2023-06-02T11:30:00Z'),
-    updateAt: new Date('2023-06-02T11:30:00Z'),
-  },
-  {
-    id: '3',
-    titulo: 'Desenvolver projeto de programação',
-    createdAt: new Date('2023-06-03T14:00:00Z'),
-    updateAt: new Date('2023-06-03T14:00:00Z'),
-  },
-  {
-    id: '4',
-    titulo: 'Assistir palestra sobre tecnologia',
-    createdAt: new Date('2023-06-04T09:00:00Z'),
-    updateAt: new Date('2023-06-04T09:00:00Z'),
-    finishedAt: new Date('2023-06-04T10:30:00Z'),
-  },
-  {
-    id: '5',
-    titulo: 'Fazer exercício de lógica',
-    createdAt: new Date('2023-06-05T08:00:00Z'),
-    updateAt: new Date('2023-06-05T08:00:00Z'),
-  },
-  {
-    id: '6',
-    titulo: 'Revisar conceitos de algoritmos',
-    createdAt: new Date('2023-06-06T13:00:00Z'),
-    updateAt: new Date('2023-06-06T13:00:00Z'),
-    finishedAt: new Date('2023-06-06T15:00:00Z'),
-  },
-  {
-    id: '7',
-    titulo: 'Praticar desafios de código',
-    createdAt: new Date('2023-06-07T16:00:00Z'),
-    updateAt: new Date('2023-06-07T16:00:00Z'),
-  },
-  {
-    id: '8',
-    titulo: 'Atualizar documentação do projeto',
-    createdAt: new Date('2023-06-08T09:00:00Z'),
-    updateAt: new Date('2023-06-08T09:00:00Z'),
-  },
-  {
-    id: '9',
-    titulo: 'Participar de reunião de equipe',
-    createdAt: new Date('2023-06-09T10:30:00Z'),
-    updateAt: new Date('2023-06-09T10:30:00Z'),
-    finishedAt: new Date('2023-06-09T11:30:00Z'),
-  },
-  {
-    id: '10',
-    titulo: 'Preparar apresentação para o cliente',
-    createdAt: new Date('2023-06-10T14:00:00Z'),
-    updateAt: new Date('2023-06-10T14:00:00Z'),
-  },
-]
+import { Todo } from '../types'
 
 export const columns: ColumnDef<Todo>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const { finishedAt } = row.original
-      const status: 'done' | 'waiting' = finishedAt ? 'done' : 'waiting'
-      const statusVariant: 'outline' | 'default' = finishedAt
-        ? 'outline'
-        : 'default'
+      const { doneAt } = row.original
+      const status: 'Concluida' | 'Em espera' = doneAt
+        ? 'Concluida'
+        : 'Em espera'
+      const statusVariant: 'default' | 'outline' = doneAt
+        ? 'default'
+        : 'outline'
 
       return <Badge variant={statusVariant}>{status}</Badge>
     },
   },
   {
-    accessorKey: 'titulo',
+    accessorKey: 'title',
     header: ({ column }) => {
       return (
         <Button
@@ -138,7 +66,7 @@ export const columns: ColumnDef<Todo>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue('titulo')}</div>,
+    cell: ({ row }) => <div>{row.getValue('title')}</div>,
   },
   {
     accessorKey: 'createdAt',
@@ -173,7 +101,9 @@ export const columns: ColumnDef<Todo>[] = [
               Copiar ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Marcar como feito</DropdownMenuItem>
+            <DropdownMenuItem>
+              {todo.doneAt ? 'Desmarca' : 'Marca'} como concluida
+            </DropdownMenuItem>
             <DropdownMenuItem>Excluir</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -182,7 +112,11 @@ export const columns: ColumnDef<Todo>[] = [
   },
 ]
 
-export function TodoDataTable() {
+type TodoDataTable = {
+  data: Todo[]
+}
+
+export function TodoDataTable({ data }: TodoDataTable) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -210,7 +144,9 @@ export function TodoDataTable() {
     },
   })
 
-  const completedTasksCount = data.filter((todo) => todo.finishedAt).length
+  if (!data) return
+
+  const completedTasksCount = data.filter((todo) => todo.doneAt).length
 
   return (
     <div className="w-full">
