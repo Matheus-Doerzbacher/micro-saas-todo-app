@@ -14,9 +14,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-
-import { Button } from '@/components/ui/button'
-// import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,90 +30,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-// import { finished } from 'stream'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Todo } from '../types'
-
-export const columns: ColumnDef<Todo>[] = [
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const { doneAt } = row.original
-      const status: 'Concluida' | 'Em espera' = doneAt
-        ? 'Concluida'
-        : 'Em espera'
-      const statusVariant: 'default' | 'outline' = doneAt
-        ? 'default'
-        : 'outline'
-
-      return <Badge variant={statusVariant}>{status}</Badge>
-    },
-  },
-  {
-    accessorKey: 'title',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Titulo
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue('title')}</div>,
-  },
-  {
-    accessorKey: 'createdAt',
-    header: () => <div className="text-right">Data Criação</div>,
-    cell: ({ row }) => {
-      return (
-        <div className="text-right font-medium">
-          {row.original.createdAt.toLocaleDateString()}
-        </div>
-      )
-    },
-  },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const todo = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <DotsHorizontalIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(todo.id)}
-            >
-              Copiar ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              {todo.doneAt ? 'Desmarca' : 'Marca'} como concluida
-            </DropdownMenuItem>
-            <DropdownMenuItem>Excluir</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
-]
+import { useRouter } from 'next/navigation'
+import { deleteTodo, upsertTodo } from '../actions'
+import { toast } from '@/components/ui/use-toast'
 
 type TodoDataTable = {
   data: Todo[]
 }
 
 export function TodoDataTable({ data }: TodoDataTable) {
+  const router = useRouter()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -124,6 +50,103 @@ export function TodoDataTable({ data }: TodoDataTable) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  const handleDeleteTodo = async (todo: Todo) => {
+    await deleteTodo({ id: todo.id })
+    router.refresh()
+
+    toast({
+      title: 'Tarefa excluida',
+      description: 'Tarefa excluida com sucesso',
+    })
+  }
+
+  const handleToggleDoneTodo = async (todo: Todo) => {
+    await upsertTodo({ id: todo.id, doneAt: todo.doneAt ? null : new Date() })
+    router.refresh()
+
+    toast({
+      title: 'Tarefa atualizada',
+      description: 'O status da tarefa foi alterado com sucesso',
+    })
+  }
+
+  const columns: ColumnDef<Todo>[] = [
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const { doneAt } = row.original
+        const status: 'Concluida' | 'Em espera' = doneAt
+          ? 'Concluida'
+          : 'Em espera'
+        const statusVariant: 'default' | 'outline' = doneAt
+          ? 'default'
+          : 'outline'
+
+        return <Badge variant={statusVariant}>{status}</Badge>
+      },
+    },
+    {
+      accessorKey: 'title',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Titulo
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => <div>{row.getValue('title')}</div>,
+    },
+    {
+      accessorKey: 'createdAt',
+      header: () => <div className="text-right">Data Criação</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-right font-medium">
+            {row.original.createdAt.toLocaleDateString()}
+          </div>
+        )
+      },
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const todo = row.original
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <DotsHorizontalIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(todo.id)}
+              >
+                Copiar ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleToggleDoneTodo(todo)}>
+                {todo.doneAt ? 'Desmarca' : 'Marca'} como concluida
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDeleteTodo(todo)}>
+                Excluir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ]
 
   const table = useReactTable({
     data,
@@ -143,8 +166,6 @@ export function TodoDataTable({ data }: TodoDataTable) {
       rowSelection,
     },
   })
-
-  if (!data) return
 
   const completedTasksCount = data.filter((todo) => todo.doneAt).length
 
@@ -193,7 +214,7 @@ export function TodoDataTable({ data }: TodoDataTable) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Sem tarefas
                 </TableCell>
               </TableRow>
             )}
