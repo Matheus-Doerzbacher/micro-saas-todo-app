@@ -25,7 +25,11 @@ export function MainSidebar({ user }: MainSidebarProps) {
   const pathname = usePathname()
 
   const isActive = (path: string) => {
-    return pathname === path
+    if (path.includes('/settings')) {
+      return pathname.includes(path)
+    } else {
+      return pathname === path
+    }
   }
 
   if (!user) return
