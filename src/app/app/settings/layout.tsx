@@ -14,9 +14,11 @@ export default function Layout({ children }: PropsWithChildren) {
         <DashboardPageHeaderTitle>Settings</DashboardPageHeaderTitle>
       </DashboardPageHeader>
       <DashboardPageMain>
-        <div className=" grid grid-cols-[16rem_1fr] gap-14">
-          <SettingsSidebar />
-          <div>{children}</div>
+        <div className="container max-w-screen-xl">
+          <div className=" grid grid-cols-[16rem_1fr] gap-14">
+            <SettingsSidebar />
+            <div>{children}</div>
+          </div>
         </div>
       </DashboardPageMain>
     </DashboardPage>
