@@ -1,10 +1,9 @@
 'use client'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -15,6 +14,16 @@ import {
 import { Todo } from './todo-data-table'
 import { useRef } from 'react'
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+
 type TodoUpsertSheetProps = {
   children?: React.ReactNode
   defaultValue?: Todo
@@ -22,37 +31,46 @@ type TodoUpsertSheetProps = {
 
 export function TodoUpsertSheet({ children }: TodoUpsertSheetProps) {
   const ref = useRef<HTMLDivElement>(null)
+
+  const form = useForm()
+
+  const onSubmit = form.handleSubmit((data) => {
+    console.log(data)
+  })
+
   return (
     <Sheet>
       <SheetTrigger asChild>
         <div ref={ref}>{children}</div>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Edit profile</SheetTitle>
-          <SheetDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" value="Pedro Duarte" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input id="username" value="@peduarte" className="col-span-3" />
-          </div>
-        </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button type="submit">Save changes</Button>
-          </SheetClose>
-        </SheetFooter>
+      <SheetContent className="space-y-6">
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="space-y-6">
+            <SheetHeader>
+              <SheetTitle>Adicionar Tarefa</SheetTitle>
+              <SheetDescription>
+                Adicione suas tarefas aqui. Clique em salvar quando terminar.
+              </SheetDescription>
+            </SheetHeader>
+
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome da Tarefa</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Comprar pão..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <SheetFooter>
+              <Button type="submit">Salvar</Button>
+            </SheetFooter>
+          </form>
+        </Form>
       </SheetContent>
     </Sheet>
   )
