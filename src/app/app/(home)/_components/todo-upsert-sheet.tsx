@@ -45,7 +45,7 @@ export function TodoUpsertSheet({ children }: TodoUpsertSheetProps) {
   const onSubmit = form.handleSubmit(async (data) => {
     await upsertTodo(data)
     router.refresh()
-
+    form.reset()
     ref.current?.click()
 
     toast({
