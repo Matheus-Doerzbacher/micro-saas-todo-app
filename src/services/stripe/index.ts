@@ -51,6 +51,7 @@ export const createStripeCustomer = async (input: {
 export const createCheckoutSession = async (
   userId: string,
   userEmail: string,
+  userStripeSubscriptionId: string,
 ) => {
   try {
     const customer = await createStripeCustomer({
