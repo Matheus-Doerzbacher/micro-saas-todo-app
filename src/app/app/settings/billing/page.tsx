@@ -9,26 +9,35 @@ import {
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { createCheckoutSessionAction } from './actions'
+import { auth } from '@/services/auth'
+import { getUserCurrentPlan } from '@/services/stripe'
 
-export default function Page() {
+export default async function Page() {
+  const session = await auth()
+  const plan = await getUserCurrentPlan(session?.user?.id)
+
   return (
     <form action={createCheckoutSessionAction}>
       <Card>
         <CardHeader className="border-b border-border">
           <CardTitle>Uso do Plano</CardTitle>
           <CardDescription>
-            Você está atualmente em um plano gratuito. Faça um upgrade para
-            desbloquear mais recursos e liberar o poder dos seus dados.
+            Você está atualmente em um plano{' '}
+            <span className="font-bold uppercase">{plan.name}</span>.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <header className="flex justify-between items-center pt-6">
-              <span className="text-muted-foreground text-sm">1/5</span>
-              <span className="text-muted-foreground text-sm">20%</span>
+              <span className="text-muted-foreground text-sm">
+                {plan.quota.TASKS.current}/{plan.quota.TASKS.available}
+              </span>
+              <span className="text-muted-foreground text-sm">
+                {plan.quota.TASKS.usage}%
+              </span>
             </header>
             <main>
-              <Progress value={20} />
+              <Progress value={plan.quota.TASKS.current} />
             </main>
           </div>
         </CardContent>

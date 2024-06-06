@@ -5,10 +5,6 @@ import { createCheckoutSession } from '@/services/stripe'
 import { redirect } from 'next/navigation'
 
 export async function createCheckoutSessionAction() {
-  console.log({
-    ok: true,
-  })
-
   const session = await auth()
 
   if (!session?.user?.id) {
