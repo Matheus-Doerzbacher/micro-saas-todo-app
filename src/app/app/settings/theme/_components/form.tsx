@@ -23,13 +23,26 @@ import {
 } from '@/components/ui/card'
 import { themeFormSchema } from '../schemas'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
 
 export function ThemeForm() {
+  const theme = useTheme()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const form = useForm<z.infer<typeof themeFormSchema>>({
     resolver: zodResolver(themeFormSchema),
+    defaultValues: {
+      theme: isMounted ? theme.theme ?? 'light' : 'light',
+    },
   })
 
-  const onSubmit = form.handleSubmit(async () => {
+  const onSubmit = form.handleSubmit(async (data) => {
+    theme.setTheme(data.theme)
     toast({
       title: 'Perfil atualizado!',
       description: 'Seu perfil foi atualizado com sucesso',
